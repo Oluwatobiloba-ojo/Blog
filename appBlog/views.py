@@ -1,13 +1,9 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.shortcuts import get_object_or_404
-
-from . import serializable
-from .models import Blog, Post, Comment
 from rest_framework.response import Response
 
+from .models import Blog, Post, Comment
 from .serializable import BlogSerializable, PostSerialize, CommentSerializer
 
 
