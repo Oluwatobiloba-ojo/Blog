@@ -18,9 +18,16 @@ class Blog(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=30)
     content = models.TextField()
-    createdAt = models.DateField(auto_now=True)
+    createdAt = models.DateField()
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.pk is None:
+            self.createdAt = datetime.date.today()
+        super().save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return f'{self.title}'
