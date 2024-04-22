@@ -4,11 +4,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 
-from .models import Blog, Post
+from . import serializable
+from .models import Blog, Post, Comment
 from rest_framework.response import Response
 
-
-from .serializable import BlogSerializable, PostSerialize
+from .serializable import BlogSerializable, PostSerialize, CommentSerializer
 
 
 # Create your views here.
@@ -41,17 +41,11 @@ def blog_detail(request, pk):
         return Response(data=serialize_bug.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', 'POST'])
-def posts(request):
-    if request.method == 'GET':
-        post = Post.objects.all()
-        serialize_post = PostSerialize(post, many=True)
-        return Response(data=serialize_post.data, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        serialize_post = PostSerialize(data=request.data)
-        serialize_post.is_valid(raise_exception=True)
-        serialize_post.save()
-        return Response(data=serialize_post.data, status=status.HTTP_201_CREATED)
+@api_view(['GET'])
+def posts(request, blogId):
+    post = Post.objects.filter(blog_id=blogId)
+    serialize_post = PostSerialize(post, many=True)
+    return Response(data=serialize_post.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -68,4 +62,45 @@ def post_details(request, pk):
     elif request.method == 'DELETE':
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+def create_post(request):
+    serialize_post = PostSerialize(data=request.data)
+    serialize_post.is_valid(raise_exception=True)
+    serialize_post.save()
+    return Response(data=serialize_post.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def comments(request, postId):
+    comment = Comment.objects.filter(post_id=postId)
+    serialize = CommentSerializer(comment, many=True)
+    if len(serialize.data) == 0:
+        return Response(data="No comment added yet", status=status.HTTP_404_NOT_FOUND)
+    return Response(data=serialize.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def create_comment(request):
+    serialize_comment = CommentSerializer(data=request.data)
+    serialize_comment.is_valid(raise_exception=True)
+    serialize_comment.save()
+    return Response(data=serialize_comment.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PUT', 'DELETE', 'GET'])
+def comment_details(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    if request.method == 'GET':
+        serialize_comment = CommentSerializer(comment)
+        return Response(data=serialize_comment.data, status=status.HTTP_302_FOUND)
+    elif request.method == 'DELETE':
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        serialize_comment = CommentSerializer(comment, data=request.data)
+        serialize_comment.is_valid(raise_exception=True)
+        serialize_comment.save()
+        return Response(data=serialize_comment.data, status=status.HTTP_200_OK)
 

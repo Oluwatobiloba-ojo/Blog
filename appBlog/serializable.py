@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from appBlog.models import Blog, Post
+from appBlog.models import Blog, Post, Comment
 
 
 class BlogSerializable(serializers.ModelSerializer):
@@ -10,8 +10,14 @@ class BlogSerializable(serializers.ModelSerializer):
 
 
 class PostSerialize(serializers.ModelSerializer):
-    blog = BlogSerializable()
+    # blog = BlogSerializable()
 
     class Meta:
         model = Post
         fields = ['title', 'content', 'blog']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['content', 'author', 'post']

@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.conf import settings
 
@@ -25,10 +27,22 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
+
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     content = models.CharField(max_length=100)
-    created_on = models.DateField(auto_now=True)
+    created_on = models.DateField()
+    updated_on = models.DateField(null=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.pk is None:
+            self.created_on = datetime.date.today()
+        else:
+            self.created_on = self.created_on
+            self.updated_on = datetime.date.today()
+        super().save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return f'{self.author}'
