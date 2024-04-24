@@ -6,15 +6,22 @@ from appBlog.models import Blog, Post, Comment
 class BlogSerializable(serializers.ModelSerializer):
     class Meta:
         model = Blog
-        fields = ['domainName', 'createdAt', 'user']
+        fields = ['domainName', 'createdAt']
+
+    def create(self, validated_data):
+        user = self.context
+        blog = Blog.objects.create(user=user, **validated_data)
+        return blog
 
 
 class PostSerialize(serializers.ModelSerializer):
-    # blog = BlogSerializable()
-
     class Meta:
         model = Post
-        fields = ['title', 'content', 'blog']
+        fields = ['title', 'content']
+
+    def create(self, validated_data):
+        blog_id = self.context
+        return Post.objects.create(blog_id=blog_id, **validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):

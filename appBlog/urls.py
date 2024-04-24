@@ -1,14 +1,17 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from rest_framework_nested import routers
+
+route = routers.DefaultRouter()
+route.register("appBlogs", views.BlogList, "appBlogs")
+
+route = routers.NestedDefaultRouter(route, "appBlogs", lookup="appBlogs")
+route.register("posts", views.PostList, "posts")
 
 
 urlpatterns = [
-    path("appBlogs/", views.blogs, name='blogs'),
-    path('appBlog/<int:pk>/', views.blog_detail, name='blog_detail'),
-    path('posts/<int:blogId>/', views.posts, name='posts'),
-    path('post/', views.create_post, name='post'),
-    path('post_details/<int:pk>/', views.post_details, name='post_details'),
     path('comments/<int:postId>/', views.comments, name='comment'),
     path('comment/', views.create_comment, name='comment'),
-    path('comment_details/<int:pk>/', views.comment_details, name='comment_details')
+    path('comment_details/<int:pk>/', views.comment_details, name='comment_details'),
+    path("", include(route.urls))
 ]
